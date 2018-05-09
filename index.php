@@ -8,11 +8,14 @@ require_once("php/functions.php");
 /**
  * Initialize some variables
  */
-$response       = null;
-$error_message  = "";
-$_channel_id    = null;
-$_access_token  = null;
-$playlist       = array();
+$response           = null;
+$error_message      = "";
+$info_message       = "";
+$_channel_id        = null;
+$_access_token      = null;
+$playlist           = array();
+$_playlist_id       = false;
+$playlist_videos    = array();
 
 /**
  * Auth proccess
@@ -30,6 +33,26 @@ include("php/get_channel_info.script.php");
  * Get playlists proccess
  */
 include("php/get_playlists.script.php");
+
+/**
+ * Get playlist videos proccess
+ * I only execute it if playlist id parameter id received
+ */
+if(isset($_GET["playlist_id"])){
+    // Initialize temporary videos array on session
+    unset($_SESSION["tmp_playlist_videos"]);
+
+    $_playlist_id = $_GET["playlist_id"];
+    include("php/get_playlist_videos.script.php");
+
+    if(empty($playlist_videos)){
+        $info_message .= "No videos found for the playlist " . $_playlist_id . "<br>";
+    }
+
+    if(isset($tmp_playlist_videos) && !empty($tmp_playlist_videos)){
+        $_SESSION["tmp_playlist_videos"] = json_encode($tmp_playlist_videos);
+    }
+}
 ?>
 <!DOCTYPE html>
 <html>
@@ -51,6 +74,11 @@ include("php/get_playlists.script.php");
                 <!-- Error messages -->
                 <?php if(!empty($error_message)): ?>
                 <div class="notification is-danger"><?php echo $error_message; ?></div>
+                <?php endif; ?>
+
+                <!-- Info messages -->
+                <?php if(!empty($info_message)): ?>
+                <div class="notification is-warning"><?php echo $info_message; ?></div>
                 <?php endif; ?>
 
                 <!-- Form -->
@@ -82,12 +110,58 @@ include("php/get_playlists.script.php");
                 <!-- Playlists -->
                 <p class="subtitle"><strong>Playlists</strong></p>
                 <ul>
-                    <?php foreach($playlist as $k => $v): ?>
-                    <li>
-                        <?php echo $v["snippet"]["title"]; ?> - 
-                        <a href="https://www.youtube.com/playlist?list=<?php echo $v["id"]; ?>" target="_blank">Link</a>
-                    </li>
-                    <?php endforeach; ?>
+                    <table class="table is-hoverable is-fullwidth">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Playlist options</th>
+                                <!-- If videos found... -->
+                                <?php if($_playlist_id && !empty($playlist_videos)): ?>
+                                <th>Download options</th>
+                                <?php endif; ?>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach($playlist as $k => $v): ?>
+                            <tr>
+                                <th>
+                                    <?php echo $v["snippet"]["title"]; ?>
+                                </th>
+                                <td>
+                                    <a href="<?php echo TY_CALLBACK_URL; ?>?playlist_id=<?php echo $v["id"]; ?>" class="button">                                        
+                                        <span class="icon">
+                                            <i class="fas fa-list"></i>
+                                        </span>
+                                        <span>Get list</span>
+                                    </a>
+                                    <a href="https://www.youtube.com/playlist?list=<?php echo $v["id"]; ?>" target="_blank" class="button">                                        
+                                        <span class="icon">
+                                            <i class="fab fa-youtube"></i>
+                                        </span>
+                                        <span>Youtube</span>
+                                    </a>
+                                </td>
+                                <!-- If videos found... -->
+                                <?php if($_playlist_id && !empty($playlist_videos)): ?>
+                                <td>
+                                    <a href="#" class="button is-link">                                        
+                                        <span class="icon">
+                                            <i class="fas fa-download"></i>
+                                        </span>
+                                        <span>MP3</span>
+                                    </a>
+                                    <a href="#" class="button is-link">                                        
+                                        <span class="icon">
+                                            <i class="fas fa-download"></i>
+                                        </span>
+                                        <span>Videos</span>
+                                    </a>
+                                </td>
+                                <?php endif; ?>                                
+                            </tr>                        
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
                 </ul>
                 <hr class="hr">
 

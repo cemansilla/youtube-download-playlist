@@ -33,6 +33,6 @@ if($code){
     }else{
         $error_message .= "Auth error :: " . $response["error_description"] . "<br />";
         unset($_SESSION["yt_access_token"]);
-    }    
+    }
 }
 ?>
