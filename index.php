@@ -2,7 +2,7 @@
 /**
  * My required scripts
  */
-require_once("php/config.php");
+require_once("php/config/config.php");
 require_once("php/functions.php");
 
 /**

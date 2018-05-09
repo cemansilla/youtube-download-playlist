@@ -10,5 +10,5 @@ define("TY_CLIENT_ID",      "");
 define("TY_CLIENT_SECRET",  "");
 define("TY_API_KEY",        "");
 define("TY_CALLBACK_URL",   "");
-define("TY_RPP",            "");
+define("TY_RPP",            1);
 ?>
